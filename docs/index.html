@@ -47,7 +47,6 @@
       gap: 0.9rem;
     }
 
-    /* 2D Animatic Sky Hero */
     .hero {
       position: relative;
       border-radius: 26px;
@@ -72,7 +71,6 @@
       z-index: 0;
     }
 
-    /* Stars for night */
     .stars {
       position: absolute;
       inset: 0;
@@ -92,7 +90,6 @@
       opacity: 0.85;
     }
 
-    /* Sun / Moon Celestial Body */
     .celestial {
       position: absolute;
       top: 58px;
@@ -117,7 +114,6 @@
       animation: moonFloat 5s ease-in-out infinite;
     }
 
-    /* Dim celestial slightly when cloudy so it feels behind clouds */
     .hero.cloudy .celestial {
       opacity: 0.68;
       filter: blur(0.6px);
@@ -138,7 +134,6 @@
       50% { transform: translate3d(0, -4px, 0); }
     }
 
-    /* 2D Shaded Clouds (inspired by pixel/2D cloud layers) */
     .cloud {
       position: absolute;
       border-radius: 999px;
@@ -153,39 +148,22 @@
       border-radius: 50%;
     }
 
-    .cloud.front {
-      z-index: 3; /* In front of Sun/Moon */
-    }
-
-    .cloud.back {
-      z-index: 0; /* Behind Sun/Moon */
-    }
+    .cloud.front { z-index: 3; }
+    .cloud.back { z-index: 0; }
 
     .hero:not(.night) .cloud {
       background: linear-gradient(180deg, #ffffff 0%, #e8eef7 68%, #c7d4e6 100%);
       box-shadow: 0 4px 0 rgba(148, 163, 184, 0.35);
     }
-
-    .hero:not(.night) .cloud::before {
-      background: #ffffff;
-    }
-
-    .hero:not(.night) .cloud::after {
-      background: #eef3fa;
-    }
+    .hero:not(.night) .cloud::before { background: #ffffff; }
+    .hero:not(.night) .cloud::after { background: #eef3fa; }
 
     .hero.night .cloud {
       background: linear-gradient(180deg, #475569 0%, #334155 72%, #1e293b 100%);
       box-shadow: 0 4px 0 rgba(15, 23, 42, 0.55);
     }
-
-    .hero.night .cloud::before {
-      background: #64748b;
-    }
-
-    .hero.night .cloud::after {
-      background: #475569;
-    }
+    .hero.night .cloud::before { background: #64748b; }
+    .hero.night .cloud::after { background: #475569; }
 
     .c1 {
       width: 112px;
@@ -218,23 +196,14 @@
     .c3::before { width: 38px; height: 38px; top: -16px; left: 14px; }
     .c3::after { width: 28px; height: 28px; top: -10px; left: 42px; }
 
-    /* When weather is clear, hide extra front clouds so Sun/Moon stays clear */
-    .hero.clear .cloud.front {
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-
-    .hero.cloudy .cloud.front {
-      opacity: 0.96;
-      transition: opacity 0.4s ease;
-    }
+    .hero.clear .cloud.front { opacity: 0; transition: opacity 0.4s ease; }
+    .hero.cloudy .cloud.front { opacity: 0.96; transition: opacity 0.4s ease; }
 
     @keyframes driftRight {
       0% { transform: translate3d(0, 0, 0); }
       100% { transform: translate3d(620px, 0, 0); }
     }
 
-    /* Subtle rain streaks when raining */
     .rain-layer {
       position: absolute;
       inset: 0;
@@ -251,16 +220,13 @@
       animation: rainFall 0.45s linear infinite;
     }
 
-    .hero.rainy .rain-layer {
-      opacity: 0.75;
-    }
+    .hero.rainy .rain-layer { opacity: 0.75; }
 
     @keyframes rainFall {
       0% { background-position: 0 0; }
       100% { background-position: -36px 90px; }
     }
 
-    /* Foreground Hero Content */
     .hero-content {
       position: relative;
       z-index: 4;
@@ -294,9 +260,7 @@
       outline: none;
     }
 
-    .search-box input::placeholder {
-      color: rgba(255, 255, 255, 0.72);
-    }
+    .search-box input::placeholder { color: rgba(255, 255, 255, 0.72); }
 
     .search-box button {
       padding: 0.6rem 0.95rem;
@@ -364,9 +328,7 @@
       font-size: 0.85rem;
     }
 
-    .err-box.show {
-      display: block;
-    }
+    .err-box.show { display: block; }
 
     .section-title {
       font-size: 1.02rem;
@@ -612,12 +574,21 @@
       box.classList.remove("show");
     }
 
+    function fmtNum(val, suffix = "", fallback = "--") {
+      const num = Number(val);
+      if (val === null || val === undefined || val === "" || Number.isNaN(num)) {
+        return fallback;
+      }
+      return Math.round(num) + suffix;
+    }
+
     function describeAqi(aqi) {
-      if (aqi == null || isNaN(aqi)) return "Unavailable";
-      if (aqi <= 50) return "Good air";
-      if (aqi <= 100) return "Moderate air";
-      if (aqi <= 150) return "Sensitive groups";
-      if (aqi <= 200) return "Unhealthy";
+      const num = Number(aqi);
+      if (aqi === null || aqi === undefined || Number.isNaN(num)) return "Unavailable";
+      if (num <= 50) return "Good air";
+      if (num <= 100) return "Moderate air";
+      if (num <= 150) return "Sensitive groups";
+      if (num <= 200) return "Unhealthy";
       return "Very unhealthy";
     }
 
@@ -666,19 +637,19 @@
 
       const hourNow = now.getHours();
       const fallbackDay = hourNow >= 6 && hourNow < 18 ? 1 : 0;
-      const activeDay = data.isDay != null ? data.isDay : fallbackDay;
+      const activeDay = data.isDay !== null && data.isDay !== undefined ? data.isDay : fallbackDay;
 
       applySkyScene(activeDay, data.weatherCode);
 
-      document.getElementById("cityTitle").textContent = data.city;
-      document.getElementById("tempVal").textContent = Math.round(data.temp);
-      document.getElementById("condText").textContent = "Current weather: " + data.condition;
+      document.getElementById("cityTitle").textContent = data.city || "Kolkata";
+      document.getElementById("tempVal").textContent = fmtNum(data.temp, "", "--");
+      document.getElementById("condText").textContent = "Current weather: " + (data.condition || "Live");
 
-      const windStr = Math.round(data.wind) + " km/h";
-      const rainStr = data.rainChance != null ? Math.round(data.rainChance) + "%" : "--%";
-      const humStr = data.humidity != null ? Math.round(data.humidity) + "%" : "--%";
-      const pressStr = data.pressure != null ? Math.round(data.pressure) + " hPa" : "-- hPa";
-      const aqiStr = data.aqi != null ? Math.round(data.aqi) : "--";
+      const windStr = fmtNum(data.wind, " km/h", "-- km/h");
+      const rainStr = fmtNum(data.rainChance, "%", "--%");
+      const humStr = fmtNum(data.humidity, "%", "--%");
+      const pressStr = fmtNum(data.pressure, " hPa", "-- hPa");
+      const aqiStr = fmtNum(data.aqi, "", "--");
 
       document.getElementById("windHero").textContent = "Wind: " + windStr;
       document.getElementById("rainHero").textContent = "Rain chance: " + rainStr;
@@ -691,7 +662,7 @@
       document.getElementById("rainVal").textContent = rainStr;
       document.getElementById("humVal").textContent = humStr;
       document.getElementById("pressVal").textContent = pressStr;
-      document.getElementById("sourceTag").textContent = "Source: " + data.source;
+      document.getElementById("sourceTag").textContent = "Source: " + (data.source || "Live");
     }
 
     async function loadByCoords(lat, lon, label) {
@@ -712,7 +683,11 @@
           fetch(aUrl).catch(() => null)
         ]);
 
-        const wJson = await wRes.json();
-        const aJson = aRes && aRes.ok ? await aRes.json() : null;
+        if (wRes && wRes.ok) {
+          const wJson = await wRes.json();
+          const aJson = aRes && aRes.ok ? await aRes.json() : null;
 
-        if (wJson.curre
+          if (wJson.current && wJson.current.temperature_2m !== undefined) {
+            const cur = wJson.current;
+            let rainProb = cur.precipitation_probability;
+            if ((rainProb === null || rainProb === undefined) && wJson.hourly && wJson.hourly.precipi
