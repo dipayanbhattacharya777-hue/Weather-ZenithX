@@ -655,4 +655,60 @@
     }
 
     document.getElementById("searchForm").addEventListener("submit", (e) => {
- 
+   <script>
+    const statusBar = document.getElementById("statusBar");
+    const statusText = document.getElementById("statusText");
+
+    function showMsg(msg) {
+      statusText.textContent = msg;
+      statusBar.classList.add("show");
+    }
+
+    async function testFetch() {
+      document.getElementById("conditionText").textContent = "Testing API...";
+      const urls = [
+        "https://api.open-meteo.com/v1/forecast?latitude=22.5726&longitude=88.3639&current_weather=true",
+        "https://wttr.in/Kolkata?format=j1"
+      ];
+
+      for (const u of urls) {
+        try {
+          const res = await fetch(u);
+          if (!res.ok) {
+            showMsg(`HTTP ${res.status} from ${u}`);
+            continue;
+          }
+          const data = await res.json();
+
+          if (data.current_weather) {
+            document.getElementById("cityName").textContent = "Kolkata, IN";
+            document.getElementById("conditionText").textContent = "Live (Open-Meteo)";
+            document.getElementById("tempMain").textContent = `${Math.round(data.current_weather.temperature)}°C`;
+            document.getElementById("windVal").textContent = `${Math.round(data.current_weather.windspeed)} km/h`;
+            document.getElementById("dateLine").textContent = "Loaded successfully";
+            return;
+          }
+
+          if (data.current_condition && data.current_condition[0]) {
+            const c = data.current_condition[0];
+            document.getElementById("cityName").textContent = "Kolkata, IN";
+            document.getElementById("conditionText").textContent = "Live (wttr.in)";
+            document.getElementById("tempMain").textContent = `${c.temp_C}°C`;
+            document.getElementById("humidityVal").textContent = `${c.humidity}%`;
+            document.getElementById("windVal").textContent = `${c.windspeedKmph} km/h`;
+            document.getElementById("dateLine").textContent = c.weatherDesc[0].value;
+            return;
+          }
+        } catch (err) {
+          showMsg(`Fetch blocked/error: ${err.message}`);
+        }
+      }
+
+      document.getElementById("conditionText").textContent = "Failed";
+      showMsg("Dono APIs (Open-Meteo & wttr.in) se response nahi aaya.");
+    }
+
+    document.getElementById("retryBtn").addEventListener("click", testFetch);
+    testFetch();
+  </script>
+
