@@ -4,711 +4,169 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather ZenithX</title>
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#0f172a">
   <style>
-    :root {
-      --bg-1: #070d1f;
-      --bg-2: #111f44;
-      --card: #121c38;
-      --card-inner: #0b1226;
-      --border: rgba(255, 255, 255, 0.14);
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-2: #818cf8;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
     body {
       min-height: 100vh;
-      background: linear-gradient(160deg, var(--bg-1), var(--bg-2));
-      color: var(--text);
+      background: linear-gradient(160deg, #070d1f, #111f44);
+      color: #f8fafc;
       padding: 1rem;
       display: flex;
       justify-content: center;
     }
-
-    .shell {
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .topbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 0.9rem 1.1rem;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .logo-badge {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      display: grid;
-      place-items: center;
-      font-weight: 800;
-      color: #060b19;
-    }
-
-    .brand h1 {
-      font-size: 1.15rem;
-      font-weight: 800;
-    }
-
-    .brand h1 span {
-      color: var(--accent);
-    }
-
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5rem;
-      flex: 1;
-      justify-content: flex-end;
-    }
-
-    .search-box {
-      display: flex;
-      align-items: center;
-      background: var(--card-inner);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.3rem 0.4rem 0.3rem 0.75rem;
-      flex: 1;
-      min-width: 190px;
-      max-width: 320px;
-    }
-
-    .search-box input {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-size: 0.9rem;
-      width: 100%;
-    }
-
-    button {
-      border: none;
-      cursor: pointer;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.85rem;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #060b19;
-      padding: 0.48rem 0.85rem;
-    }
-
-    .btn-ghost {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 0.5rem 0.75rem;
-    }
-
-    .status-bar {
-      padding: 0.75rem 1rem;
-      border-radius: 12px;
-      font-size: 0.88rem;
-      background: rgba(248, 113, 113, 0.16);
-      border: 1px solid rgba(248, 113, 113, 0.4);
-      color: #fecaca;
-      display: none;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .status-bar.show {
-      display: flex;
-    }
-
-    .dashboard {
-      display: grid;
-      grid-template-columns: 1.25fr 1fr;
-      gap: 1rem;
-    }
-
-    @media (max-width: 720px) {
-      .dashboard {
-        grid-template-columns: 1fr;
-      }
-    }
-
+    .app { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 1rem; }
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 1.25rem;
+      background: #121c38;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 16px;
+      padding: 1.2rem;
     }
-
-    .hero-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 0.75rem;
-    }
-
-    .city-name {
-      font-size: 1.55rem;
-      font-weight: 800;
-    }
-
-    .date-line {
-      color: var(--muted);
-      font-size: 0.85rem;
-      margin-top: 0.2rem;
-    }
-
-    .condition-pill {
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      color: var(--accent);
-      padding: 0.35rem 0.75rem;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 600;
-    }
-
-    .temp-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 1.2rem 0;
-    }
-
-    .temp-main {
-      font-size: 4rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-
-    .weather-icon-wrap {
-      font-size: 3.8rem;
-      line-height: 1;
-    }
-
-    .sub-temps {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      color: var(--muted);
-      font-size: 0.88rem;
-      padding-top: 0.85rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .sub-temps strong {
-      color: var(--text);
-    }
-
-    .section-title {
+    .row { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    input {
+      flex: 1;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: #0b1226;
+      color: #fff;
       font-size: 0.95rem;
+    }
+    button {
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      border: none;
+      background: #38bdf8;
+      color: #060b19;
       font-weight: 700;
-      margin-bottom: 0.85rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      cursor: pointer;
     }
-
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.75rem;
-    }
-
-    .metric-box {
-      background: var(--card-inner);
-      border: 1px solid var(--border);
+    .temp { font-size: 3.4rem; font-weight: 800; margin: 0.6rem 0; }
+    .muted { color: #94a3b8; font-size: 0.9rem; }
+    .err {
+      display: none;
+      background: rgba(248,113,113,0.18);
+      border: 1px solid #f87171;
+      color: #fecaca;
+      padding: 0.8rem 1rem;
       border-radius: 12px;
-      padding: 0.85rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
+      font-size: 0.88rem;
     }
-
-    .metric-label {
-      font-size: 0.75rem;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .metric-val {
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
-
-    .metric-sub {
-      font-size: 0.76rem;
-      color: var(--accent);
-    }
-
-    .forecast-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0.65rem;
-    }
-
-    @media (max-width: 640px) {
-      .forecast-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    .forecast-item {
-      background: var(--card-inner);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 0.8rem 0.6rem;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.3rem;
-    }
-
-    .f-day {
-      font-weight: 700;
-      font-size: 0.85rem;
-    }
-
-    .f-icon {
-      font-size: 1.5rem;
-    }
-
-    .f-temp {
-      font-weight: 800;
-      font-size: 1rem;
-      color: var(--accent);
-    }
-
-    .f-desc {
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-
-    .footer {
-      text-align: center;
-      font-size: 0.78rem;
-      color: var(--muted);
-      padding: 0.3rem 0;
-    }
+    .err.show { display: block; }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo-badge">Z</div>
-        <h1>Weather <span>ZenithX</span></h1>
+  <div class="app">
+    <div class="card">
+      <h2>Weather ZenithX</h2>
+      <div class="row">
+        <input id="cityInput" type="text" placeholder="Enter city (e.g. Kolkata, Delhi)" />
+        <button id="searchBtn" type="button">Search</button>
       </div>
-
-      <div class="controls">
-        <form class="search-box" id="searchForm">
-          <input type="text" id="cityInput" placeholder="Search city (e.g., Kolkata, Delhi)..." required />
-          <button type="submit" class="btn-primary">Search</button>
-        </form>
-        <button type="button" class="btn-ghost" id="geoBtn">📍 GPS</button>
-        <button type="button" class="btn-ghost" id="unitBtn">°C</button>
-      </div>
-    </header>
-
-    <div class="status-bar" id="statusBar">
-      <span id="statusText"></span>
-      <button type="button" class="btn-primary" id="retryBtn">Retry</button>
     </div>
 
-    <main class="dashboard">
-      <section class="card">
-        <div class="hero-top">
-          <div>
-            <div class="city-name" id="cityName">Kolkata, IN</div>
-            <div class="date-line" id="dateLine">Fetching weather...</div>
-          </div>
-          <div class="condition-pill" id="conditionText">Loading</div>
-        </div>
+    <div class="err" id="errBox"></div>
 
-        <div class="temp-row">
-          <div class="temp-main" id="tempMain">--°</div>
-          <div class="weather-icon-wrap" id="weatherIcon">⛅</div>
-        </div>
-
-        <div class="sub-temps">
-          <span>Feels like: <strong id="feelsLike">--°</strong></span>
-          <span>High / Low: <strong id="hiLo">--° / --°</strong></span>
-          <span>Clouds: <strong id="cloudsVal">--%</strong></span>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="section-title">Atmospheric Telemetry</div>
-        <div class="metrics-grid">
-          <div class="metric-box">
-            <span class="metric-label">Humidity</span>
-            <span class="metric-val" id="humidityVal">--%</span>
-            <span class="metric-sub" id="humidityNote">Moisture level</span>
-          </div>
-          <div class="metric-box">
-            <span class="metric-label">Wind Speed</span>
-            <span class="metric-val" id="windVal">--</span>
-            <span class="metric-sub" id="windDir">Direction --°</span>
-          </div>
-          <div class="metric-box">
-            <span class="metric-label">Pressure</span>
-            <span class="metric-val" id="pressureVal">-- hPa</span>
-            <span class="metric-sub">Barometric</span>
-          </div>
-          <div class="metric-box">
-            <span class="metric-label">Visibility</span>
-            <span class="metric-val" id="visVal">-- km</span>
-            <span class="metric-sub" id="sunTimes">Sunrise / Sunset</span>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <section class="card">
-      <div class="section-title">
-        <span>Forecast</span>
-        <span id="sourceTag" style="font-size: 0.78rem; color: var(--muted);">Live Feed</span>
-      </div>
-      <div class="forecast-grid" id="forecastGrid">
-        <div class="forecast-item">
-          <span class="f-day">--</span>
-          <span class="f-icon">⛅</span>
-          <span class="f-temp">--°</span>
-          <span class="f-desc">Loading...</span>
-        </div>
-      </div>
-    </section>
-
-    <footer class="footer">
-      Weather ZenithX • Keyless Live Weather
-    </footer>
+    <div class="card">
+      <div id="place" style="font-size:1.35rem;font-weight:700;">Kolkata</div>
+      <div class="muted" id="status">Starting...</div>
+      <div class="temp" id="temp">--°C</div>
+      <div class="muted" id="details">Wind: -- | Humidity: --</div>
+    </div>
   </div>
 
   <script>
-    const CITY_KEY = "zenithx_saved_city_v4";
-    let unit = "metric";
-    let currentTarget = { name: "Kolkata", country: "IN", lat: 22.5726, lon: 88.3639 };
+    window.addEventListener("error", function (e) {
+      const box = document.getElementById("errBox");
+      box.textContent = "JS Error: " + e.message;
+      box.classList.add("show");
+    });
 
-    try {
-      const saved = JSON.parse(localStorage.getItem(CITY_KEY));
-      if (saved && saved.name) currentTarget = saved;
-    } catch (_) {}
-
-    const statusBar = document.getElementById("statusBar");
-    const statusText = document.getElementById("statusText");
-
-    function showError(msg) {
-      statusText.textContent = msg;
-      statusBar.classList.add("show");
+    function showErr(msg) {
+      const box = document.getElementById("errBox");
+      box.textContent = msg;
+      box.classList.add("show");
     }
 
-    function clearError() {
-      statusBar.classList.remove("show");
+    function clearErr() {
+      const box = document.getElementById("errBox");
+      box.textContent = "";
+      box.classList.remove("show");
     }
 
-    function formatTemp(c) {
-      const val = Number(c);
-      if (Number.isNaN(val)) return "--";
-      return unit === "metric" ? Math.round(val) : Math.round((val * 9) / 5 + 32);
+    function paintWeather(city, temp, wind, humidity, cond, source) {
+      document.getElementById("place").textContent = city;
+      document.getElementById("temp").textContent = Math.round(temp) + "°C";
+      document.getElementById("status").textContent = cond + " (" + source + ")";
+      document.getElementById("details").textContent =
+        "Wind: " + Math.round(wind) + " km/h | Humidity: " + humidity + "%";
     }
 
-    function decodeWMO(code) {
-      const c = Number(code);
-      if (c === 0) return { label: "Clear Sky", icon: "☀️" };
-      if (c === 1 || c === 2) return { label: "Partly Cloudy", icon: "⛅" };
-      if (c === 3) return { label: "Overcast", icon: "☁️" };
-      if (c === 45 || c === 48) return { label: "Foggy", icon: "🌫️" };
-      if (c >= 51 && c <= 67) return { label: "Rain", icon: "🌧️" };
-      if (c >= 71 && c <= 77) return { label: "Snow", icon: "❄️" };
-      if (c >= 80 && c <= 82) return { label: "Rain Showers", icon: "🌦️" };
-      if (c >= 95) return { label: "Thunderstorm", icon: "⛈️" };
-      return { label: "Cloudy", icon: "⛅" };
-    }
+    async function fetchWeather(city) {
+      clearErr();
+      document.getElementById("status").textContent = "Fetching live data...";
 
-    function fetchWithTimeout(url, ms = 7000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), ms);
-      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
-    }
-
-    // Engine 1: Open-Meteo
-    async function loadFromOpenMeteo(target) {
-      let lat = target.lat;
-      let lon = target.lon;
-      let name = target.name;
-      let country = target.country || "";
-
-      if (lat == null || lon == null) {
-        const gRes = await fetchWithTimeout(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=en&format=json`
-        );
-        if (!gRes.ok) throw new Error("Geocoding failed");
-        const gData = await gRes.json();
-        if (!gData.results || !gData.results.length) throw new Error("City not found");
-        lat = gData.results[0].latitude;
-        lon = gData.results[0].longitude;
-        name = gData.results[0].name;
-        country = gData.results[0].country_code || "";
-      }
-
-      const wRes = await fetchWithTimeout(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m,apparent_temperature,cloud_cover,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto&forecast_days=6`
-      );
-      if (!wRes.ok) throw new Error("Open-Meteo unavailable");
-      const data = await wRes.json();
-
-      const cw = data.current_weather;
-      const hourly = data.hourly || {};
-      const daily = data.daily || {};
-      const wmo = decodeWMO(cw.weathercode);
-
-      let hIdx = 0;
-      if (hourly.time && cw.time) {
-        const found = hourly.time.findIndex((t) => t.startsWith(cw.time.slice(0, 13)));
-        if (found >= 0) hIdx = found;
-      }
-
-      const forecast = [];
-      if (daily.time) {
-        for (let i = 1; i <= 5; i++) {
-          if (!daily.time[i]) break;
-          const dWmo = decodeWMO(daily.weather_code ? daily.weather_code[i] : 2);
-          const dLabel = new Date(daily.time[i] + "T12:00:00").toLocaleDateString(undefined, {
-            weekday: "short",
-            day: "numeric"
-          });
-          forecast.push({
-            day: dLabel,
-            icon: dWmo.icon,
-            maxC: daily.temperature_2m_max[i],
-            minC: daily.temperature_2m_min[i],
-            desc: dWmo.label
-          });
-        }
-      }
-
-      return {
-        source: "Open-Meteo",
-        target: { name, country, lat, lon },
-        tempC: cw.temperature,
-        feelsC: hourly.apparent_temperature ? hourly.apparent_temperature[hIdx] : cw.temperature,
-        maxC: daily.temperature_2m_max ? daily.temperature_2m_max[0] : cw.temperature,
-        minC: daily.temperature_2m_min ? daily.temperature_2m_min[0] : cw.temperature,
-        condition: wmo.label,
-        icon: wmo.icon,
-        clouds: hourly.cloud_cover ? hourly.cloud_cover[hIdx] : "--",
-        humidity: hourly.relative_humidity_2m ? hourly.relative_humidity_2m[hIdx] : "--",
-        windKmh: cw.windspeed,
-        windDir: `${cw.winddirection}°`,
-        pressure: hourly.surface_pressure ? Math.round(hourly.surface_pressure[hIdx]) : "--",
-        visKm: "10.0",
-        sunrise: daily.sunrise && daily.sunrise[0] ? daily.sunrise[0].split("T")[1] : "--:--",
-        sunset: daily.sunset && daily.sunset[0] ? daily.sunset[0].split("T")[1] : "--:--",
-        forecast
-      };
-    }
-
-    // Engine 2: wttr.in Automatic Backup (If Open-Meteo is blocked or slow)
-    async function loadFromWttr(target) {
-      const q = target.lat != null && target.lon != null ? `${target.lat},${target.lon}` : target.name;
-      const res = await fetchWithTimeout(`https://wttr.in/${encodeURIComponent(q)}?format=j1`, 8000);
-      if (!res.ok) throw new Error("Backup weather unavailable");
-      const data = await res.json();
-
-      const cur = data.current_condition[0];
-      const area = data.nearest_area && data.nearest_area[0];
-      const resolvedName = target.lat != null && area ? area.areaName[0].value : target.name;
-      const resolvedCountry = area ? area.country[0].value : target.country || "";
-
-      const forecast = (data.weather || []).slice(0, 3).map((d) => {
-        const dLabel = new Date(d.date + "T12:00:00").toLocaleDateString(undefined, {
-          weekday: "short",
-          day: "numeric"
-        });
-        return {
-          day: dLabel,
-          icon: "⛅",
-          maxC: Number(d.maxtempC),
-          minC: Number(d.mintempC),
-          desc: d.hourly && d.hourly[4] ? d.hourly[4].weatherDesc[0].value : "Forecast"
-        };
-      });
-
-      return {
-        source: "Wttr Backup",
-        target: { name: resolvedName, country: resolvedCountry, lat: target.lat, lon: target.lon },
-        tempC: Number(cur.temp_C),
-        feelsC: Number(cur.FeelsLikeC),
-        maxC: data.weather && data.weather[0] ? Number(data.weather[0].maxtempC) : Number(cur.temp_C),
-        minC: data.weather && data.weather[0] ? Number(data.weather[0].mintempC) : Number(cur.temp_C),
-        condition: cur.weatherDesc[0].value,
-        icon: "⛅",
-        clouds: cur.cloudcover,
-        humidity: cur.humidity,
-        windKmh: Number(cur.windspeedKmph),
-        windDir: cur.winddir16Point,
-        pressure: cur.pressure,
-        visKm: cur.visibility,
-        sunrise: data.weather && data.weather[0] ? data.weather[0].astronomy[0].sunrise : "--:--",
-        sunset: data.weather && data.weather[0] ? data.weather[0].astronomy[0].sunset : "--:--",
-        forecast
-      };
-    }
-
-    function render(model) {
-      const sym = unit === "metric" ? "°C" : "°F";
-      currentTarget = model.target;
-      localStorage.setItem(CITY_KEY, JSON.stringify(currentTarget));
-
-      document.getElementById("cityName").textContent = model.target.country
-        ? `${model.target.name}, ${model.target.country}`
-        : model.target.name;
-
-      document.getElementById("dateLine").textContent = new Date().toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-
-      document.getElementById("conditionText").textContent = model.condition;
-      document.getElementById("weatherIcon").textContent = model.icon;
-      document.getElementById("tempMain").textContent = `${formatTemp(model.tempC)}${sym}`;
-      document.getElementById("feelsLike").textContent = `${formatTemp(model.feelsC)}${sym}`;
-      document.getElementById("hiLo").textContent = `${formatTemp(model.maxC)}° / ${formatTemp(model.minC)}°`;
-      document.getElementById("cloudsVal").textContent = `${model.clouds}%`;
-
-      document.getElementById("humidityVal").textContent = `${model.humidity}%`;
-      document.getElementById("humidityNote").textContent = Number(model.humidity) > 75 ? "High humidity" : "Normal";
-
-      const windText = unit === "metric"
-        ? `${Math.round(model.windKmh)} km/h`
-        : `${Math.round(model.windKmh * 0.621371)} mph`;
-      document.getElementById("windVal").textContent = windText;
-      document.getElementById("windDir").textContent = `Direction ${model.windDir}`;
-
-      document.getElementById("pressureVal").textContent = `${model.pressure} hPa`;
-      document.getElementById("visVal").textContent = `${model.visKm} km`;
-      document.getElementById("sunTimes").textContent = `${model.sunrise} / ${model.sunset}`;
-      document.getElementById("sourceTag").textContent = `Source: ${model.source}`;
-
-      const grid = document.getElementById("forecastGrid");
-      grid.innerHTML = "";
-      model.forecast.forEach((f) => {
-        const div = document.createElement("div");
-        div.className = "forecast-item";
-        div.innerHTML = `
-          <span class="f-day">${f.day}</span>
-          <span class="f-icon">${f.icon}</span>
-          <span class="f-temp">${formatTemp(f.maxC)}° / ${formatTemp(f.minC)}°</span>
-          <span class="f-desc">${f.desc}</span>
-        `;
-        grid.appendChild(div);
-      });
-    }
-
-    async function loadWeather(target) {
-      clearError();
-      document.getElementById("conditionText").textContent = "Syncing...";
+      // 1. Try Open-Meteo Geocoding + Forecast
       try {
-        const model = await loadFromOpenMeteo(target);
-        render(model);
-      } catch (_) {
-        try {
-          const backupModel = await loadFromWttr(target);
-          render(backupModel);
-        } catch (err) {
-          document.getElementById("conditionText").textContent = "Offline";
-          showError("Network error: Could not load weather. Check internet & tap Retry.");
-        }
-      }
-    }
+        const gUrl = "https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(city) + "&count=1";
+        const gRes = await fetch(gUrl);
+        const gJson = await gRes.json();
 
-    document.getElementById("searchForm").addEventListener("submit", (e) => {
-   <script>
-    const statusBar = document.getElementById("statusBar");
-    const statusText = document.getElementById("statusText");
+        if (gJson.results && gJson.results.length > 0) {
+          const loc = gJson.results[0];
+          const wUrl =
+            "https://api.open-meteo.com/v1/forecast?latitude=" +
+            loc.latitude +
+            "&longitude=" +
+            loc.longitude +
+            "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code";
+          const wRes = await fetch(wUrl);
+          const wJson = await wRes.json();
 
-    function showMsg(msg) {
-      statusText.textContent = msg;
-      statusBar.classList.add("show");
-    }
-
-    async function testFetch() {
-      document.getElementById("conditionText").textContent = "Testing API...";
-      const urls = [
-        "https://api.open-meteo.com/v1/forecast?latitude=22.5726&longitude=88.3639&current_weather=true",
-        "https://wttr.in/Kolkata?format=j1"
-      ];
-
-      for (const u of urls) {
-        try {
-          const res = await fetch(u);
-          if (!res.ok) {
-            showMsg(`HTTP ${res.status} from ${u}`);
-            continue;
-          }
-          const data = await res.json();
-
-          if (data.current_weather) {
-            document.getElementById("cityName").textContent = "Kolkata, IN";
-            document.getElementById("conditionText").textContent = "Live (Open-Meteo)";
-            document.getElementById("tempMain").textContent = `${Math.round(data.current_weather.temperature)}°C`;
-            document.getElementById("windVal").textContent = `${Math.round(data.current_weather.windspeed)} km/h`;
-            document.getElementById("dateLine").textContent = "Loaded successfully";
+          if (wJson.current) {
+            paintWeather(
+              loc.name + (loc.country_code ? ", " + loc.country_code : ""),
+              wJson.current.temperature_2m,
+              wJson.current.wind_speed_10m,
+              wJson.current.relative_humidity_2m,
+              "Code " + wJson.current.weather_code,
+              "Open-Meteo"
+            );
             return;
           }
-
-          if (data.current_condition && data.current_condition[0]) {
-            const c = data.current_condition[0];
-            document.getElementById("cityName").textContent = "Kolkata, IN";
-            document.getElementById("conditionText").textContent = "Live (wttr.in)";
-            document.getElementById("tempMain").textContent = `${c.temp_C}°C`;
-            document.getElementById("humidityVal").textContent = `${c.humidity}%`;
-            document.getElementById("windVal").textContent = `${c.windspeedKmph} km/h`;
-            document.getElementById("dateLine").textContent = c.weatherDesc[0].value;
-            return;
-          }
-        } catch (err) {
-          showMsg(`Fetch blocked/error: ${err.message}`);
         }
+      } catch (e1) {
+        // Fallback below
       }
 
-      document.getElementById("conditionText").textContent = "Failed";
-      showMsg("Dono APIs (Open-Meteo & wttr.in) se response nahi aaya.");
+      // 2. Fallback to wttr.in
+      try {
+        const tRes = await fetch("https://wttr.in/" + encodeURIComponent(city) + "?format=j1");
+        const tJson = await tRes.json();
+        if (tJson.current_condition && tJson.current_condition[0]) {
+          const cur = tJson.current_condition[0];
+          paintWeather(
+            city,
+            cur.temp_C,
+            cur.windspeedKmph,
+            cur.humidity,
+            cur.weatherDesc && cur.weatherDesc[0] ? cur.weatherDesc[0].value : "Live",
+            "wttr.in"
+          );
+          return;
+        }
+      } catch (e2) {
+        showErr("Dono weather servers se data nahi aa paya. Network/DNS check karein.");
+      }
+
+      document.getElementById("status").textContent = "Could not load weather";
     }
 
-    document.getElementById("retryBtn").addEventListener("click", testFetch);
-    testFetch();
+    document.getElementById("searchBtn").addEventListener("click", function () {
+      const val = document.getElementById("cityInput").value.trim();
+      if (val) fetchWeather(val);
+    });
+
+    fetchWeather("Kolkata");
   </script>
-
+</body>
+</html>
