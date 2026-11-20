@@ -690,4 +690,117 @@
           if (wJson.current && wJson.current.temperature_2m !== undefined) {
             const cur = wJson.current;
             let rainProb = cur.precipitation_probability;
-            if ((rainProb === null || rainProb === undefined) && wJson.hourly && wJson.hourly.precipi
+            if ((rainProb === null || rainProb === undefined) && wJson.hourly && wJson.hourly.precipitation_probability) {
+              rainProb = wJson.hourly.precipitation_probability[0];
+            }
+
+            renderUI({
+              city: label,
+              temp: cur.temperature_2m,
+              condition: WEATHER_LABELS[cur.weather_code] || ("Weather Code " + cur.weather_code),
+              weatherCode: cur.weather_code,
+              isDay: cur.is_day,
+              wind: cur.wind_speed_10m,
+              rainChance: rainProb,
+              humidity: cur.relative_humidity_2m,
+              pressure: cur.surface_pressure,
+              aqi: aJson && aJson.current ? aJson.current.us_aqi : null,
+              source: "Open-Meteo"
+            });
+            return;
+          }
+        }
+      } catch (err) {
+        // Fallback below
+      }
+
+      try {
+        const tRes = await fetch("https://wttr.in/" + encodeURIComponent(label) + "?format=j1");
+        if (tRes.ok) {
+          const tJson = await tRes.json();
+          if (tJson.current_condition && tJson.current_condition[0]) {
+            const c = tJson.current_condition[0];
+            const chance = c.precipMM && Number(c.precipMM) > 0 ? 70 : 15;
+            renderUI({
+              city: label,
+              temp: c.temp_C,
+              condition: c.weatherDesc && c.weatherDesc[0] ? c.weatherDesc[0].value : "Live",
+              weatherCode: chance >= 70 ? 61 : 2,
+              isDay: null,
+              wind: c.windspeedKmph,
+              rainChance: chance,
+              humidity: c.humidity,
+              pressure: c.pressure,
+              aqi: null,
+              source: "wttr.in"
+            });
+            return;
+          }
+        }
+      } catch (e2) {
+        // Handled below
+      }
+
+      showError("Live temperature abhi load nahi ho paaya. Network ya API response check karein.");
+      document.getElementById("updatedTag").textContent = "Retry needed";
+    }
+
+    async function loadByCity(cityName) {
+      currentCity = cityName;
+      clearError();
+      document.getElementById("updatedTag").textContent = "Syncing...";
+
+      try {
+        const geoUrl =
+          "https://geocoding-api.open-meteo.com/v1/search?name=" +
+          encodeURIComponent(cityName) +
+          "&count=5";
+        const gRes = await fetch(geoUrl);
+        if (gRes.ok) {
+          const gJson = await gRes.json();
+          if (gJson.results && gJson.results.length > 0) {
+            const item =
+              gJson.results.find((r) => r.country_code === "IN") || gJson.results[0];
+            const regionPart = item.admin1 ? `, ${item.admin1}` : "";
+            const niceName = `${item.name}${regionPart}, ${item.country_code || ""}`.replace(/,\s*$/, "");
+            await loadByCoords(item.latitude, item.longitude, niceName);
+            return;
+          }
+        }
+      } catch (e) {
+        // Fallback below
+      }
+
+      await loadByCoords(22.5726, 88.3639, cityName);
+    }
+
+    document.getElementById("searchForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const q = document.getElementById("cityInput").value.trim();
+      if (q) loadByCity(q);
+    });
+
+    document.getElementById("btnKolkata").addEventListener("click", () => {
+      document.getElementById("cityInput").value = "";
+      loadByCity("Kolkata");
+    });
+
+    document.getElementById("btnRefresh").addEventListener("click", () => {
+      loadByCity(currentCity);
+    });
+
+    document.getElementById("btnGps").addEventListener("click", () => {
+      if (!navigator.geolocation) {
+        showError("Is device/browser mein GPS support available nahi hai.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => loadByCoords(pos.coords.latitude, pos.coords.longitude, "My Location"),
+        () => showError("Location permission allow nahi hui ya GPS off hai.")
+      );
+    });
+
+    loadByCity("Kolkata");
+  </script>
+</body>
+</html>
