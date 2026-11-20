@@ -6,13 +6,12 @@
   <title>Weather ZenithX</title>
   <style>
     :root {
-      --bg-mid: #6b6e64;
+      --bg-outer: #16181d;
       --card-dark: #141413;
-      --card-soft: rgba(20, 20, 19, 0.72);
       --text-main: #f8fafc;
-      --text-muted: rgba(248, 250, 252, 0.78);
+      --text-muted: rgba(248, 250, 252, 0.82);
       --accent: #f49b52;
-      --border: rgba(255, 255, 255, 0.14);
+      --border: rgba(255, 255, 255, 0.16);
     }
 
     * {
@@ -24,11 +23,20 @@
 
     body {
       min-height: 100vh;
-      background: var(--bg-mid);
+      background: var(--bg-outer);
       color: var(--text-main);
       padding: 0.9rem 0.9rem 5.5rem 0.9rem;
       display: flex;
       justify-content: center;
+      transition: background 0.5s ease;
+    }
+
+    body.theme-day {
+      background: linear-gradient(180deg, #279be8 0%, #58b8f5 52%, #6f776c 100%);
+    }
+
+    body.theme-night {
+      background: linear-gradient(180deg, #070b17 0%, #101933 55%, #191d26 100%);
     }
 
     .app {
@@ -39,50 +47,259 @@
       gap: 0.9rem;
     }
 
+    /* 2D Animatic Sky Hero */
     .hero {
       position: relative;
       border-radius: 26px;
       overflow: hidden;
       padding: 1.15rem;
-      background:
-        linear-gradient(180deg, rgba(24, 21, 24, 0.35) 0%, rgba(186, 114, 66, 0.78) 55%, rgba(107, 110, 100, 0.96) 100%),
-        linear-gradient(135deg, #2d3748, #d97742, #7c8276);
+      min-height: 310px;
       border: 1px solid var(--border);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+      background: linear-gradient(180deg, #1693e6 0%, #5cc0ff 72%, #8cd4ff 100%);
+      transition: background 0.6s ease;
+    }
+
+    .hero.night {
+      background: linear-gradient(180deg, #050811 0%, #0d1630 68%, #1a2442 100%);
+    }
+
+    .sky-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    /* Stars for night */
+    .stars {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      background-image:
+        radial-gradient(1.5px 1.5px at 14% 18%, #ffffff, transparent),
+        radial-gradient(1px 1px at 28% 36%, #e2e8f0, transparent),
+        radial-gradient(2px 2px at 46% 14%, #ffffff, transparent),
+        radial-gradient(1.2px 1.2px at 66% 24%, #cbd5e1, transparent),
+        radial-gradient(1.8px 1.8px at 82% 16%, #ffffff, transparent),
+        radial-gradient(1px 1px at 90% 38%, #f8fafc, transparent),
+        radial-gradient(1.5px 1.5px at 36% 52%, #e2e8f0, transparent);
+    }
+
+    .hero.night .stars {
+      opacity: 0.85;
+    }
+
+    /* Sun / Moon Celestial Body */
+    .celestial {
+      position: absolute;
+      top: 58px;
+      right: 26px;
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      z-index: 1;
+      transform: translate3d(0, 0, 0);
+      transition: all 0.5s ease;
+    }
+
+    .celestial.sun {
+      background: radial-gradient(circle at 35% 35%, #fff59d 0%, #ffca28 55%, #ff8f00 100%);
+      box-shadow: 0 0 28px rgba(255, 202, 40, 0.85), 0 0 60px rgba(255, 143, 0, 0.45);
+      animation: sunPulse 4.5s ease-in-out infinite;
+    }
+
+    .celestial.moon {
+      background: radial-gradient(circle at 32% 30%, #ffffff 0%, #e2e8f0 68%, #94a3b8 100%);
+      box-shadow: 0 0 24px rgba(226, 232, 240, 0.65), 0 0 48px rgba(148, 163, 184, 0.3);
+      animation: moonFloat 5s ease-in-out infinite;
+    }
+
+    /* Dim celestial slightly when cloudy so it feels behind clouds */
+    .hero.cloudy .celestial {
+      opacity: 0.68;
+      filter: blur(0.6px);
+    }
+
+    .hero.clear .celestial {
+      opacity: 1;
+      filter: none;
+    }
+
+    @keyframes sunPulse {
+      0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(0, -3px, 0) scale(1.04); }
+    }
+
+    @keyframes moonFloat {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      50% { transform: translate3d(0, -4px, 0); }
+    }
+
+    /* 2D Shaded Clouds (inspired by pixel/2D cloud layers) */
+    .cloud {
+      position: absolute;
+      border-radius: 999px;
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .cloud.front {
+      z-index: 3; /* In front of Sun/Moon */
+    }
+
+    .cloud.back {
+      z-index: 0; /* Behind Sun/Moon */
+    }
+
+    .hero:not(.night) .cloud {
+      background: linear-gradient(180deg, #ffffff 0%, #e8eef7 68%, #c7d4e6 100%);
+      box-shadow: 0 4px 0 rgba(148, 163, 184, 0.35);
+    }
+
+    .hero:not(.night) .cloud::before {
+      background: #ffffff;
+    }
+
+    .hero:not(.night) .cloud::after {
+      background: #eef3fa;
+    }
+
+    .hero.night .cloud {
+      background: linear-gradient(180deg, #475569 0%, #334155 72%, #1e293b 100%);
+      box-shadow: 0 4px 0 rgba(15, 23, 42, 0.55);
+    }
+
+    .hero.night .cloud::before {
+      background: #64748b;
+    }
+
+    .hero.night .cloud::after {
+      background: #475569;
+    }
+
+    .c1 {
+      width: 112px;
+      height: 30px;
+      top: 76px;
+      left: -120px;
+      animation: driftRight 22s linear infinite;
+    }
+    .c1::before { width: 46px; height: 46px; top: -20px; left: 16px; }
+    .c1::after { width: 34px; height: 34px; top: -13px; left: 50px; }
+
+    .c2 {
+      width: 136px;
+      height: 34px;
+      top: 122px;
+      left: -150px;
+      animation: driftRight 29s linear -9s infinite;
+    }
+    .c2::before { width: 54px; height: 54px; top: -24px; left: 22px; }
+    .c2::after { width: 42px; height: 42px; top: -16px; left: 62px; }
+
+    .c3 {
+      width: 92px;
+      height: 24px;
+      top: 174px;
+      left: -110px;
+      opacity: 0.88;
+      animation: driftRight 18s linear -5s infinite;
+    }
+    .c3::before { width: 38px; height: 38px; top: -16px; left: 14px; }
+    .c3::after { width: 28px; height: 28px; top: -10px; left: 42px; }
+
+    /* When weather is clear, hide extra front clouds so Sun/Moon stays clear */
+    .hero.clear .cloud.front {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .hero.cloudy .cloud.front {
+      opacity: 0.96;
+      transition: opacity 0.4s ease;
+    }
+
+    @keyframes driftRight {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(620px, 0, 0); }
+    }
+
+    /* Subtle rain streaks when raining */
+    .rain-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      opacity: 0;
+      pointer-events: none;
+      background-image: repeating-linear-gradient(
+        105deg,
+        rgba(226, 232, 240, 0.45) 0px,
+        rgba(226, 232, 240, 0.45) 1.5px,
+        transparent 1.5px,
+        transparent 18px
+      );
+      animation: rainFall 0.45s linear infinite;
+    }
+
+    .hero.rainy .rain-layer {
+      opacity: 0.75;
+    }
+
+    @keyframes rainFall {
+      0% { background-position: 0 0; }
+      100% { background-position: -36px 90px; }
+    }
+
+    /* Foreground Hero Content */
+    .hero-content {
+      position: relative;
+      z-index: 4;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
     }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.75rem;
     }
 
     .search-box {
       display: flex;
       gap: 0.45rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.9rem;
     }
 
     .search-box input {
       flex: 1;
-      padding: 0.62rem 0.85rem;
+      padding: 0.6rem 0.85rem;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      background: rgba(15, 15, 15, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(15, 18, 25, 0.48);
+      backdrop-filter: blur(6px);
       color: #fff;
       font-size: 0.9rem;
       outline: none;
     }
 
     .search-box input::placeholder {
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.72);
     }
 
     .search-box button {
-      padding: 0.62rem 0.95rem;
+      padding: 0.6rem 0.95rem;
       border-radius: 999px;
       border: none;
       background: var(--accent);
@@ -93,9 +310,9 @@
     }
 
     .date-line {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       color: var(--text-muted);
-      margin-bottom: 0.2rem;
+      margin-bottom: 0.15rem;
     }
 
     .temp-row {
@@ -105,41 +322,41 @@
     }
 
     .temp-big {
-      font-size: 3.5rem;
+      font-size: 3.4rem;
       font-weight: 700;
       line-height: 1;
       letter-spacing: -1.5px;
     }
 
     .temp-unit {
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       color: var(--text-muted);
     }
 
     .city-title {
-      font-size: 1.45rem;
+      font-size: 1.42rem;
       font-weight: 700;
-      margin-top: 0.25rem;
-      margin-bottom: 0.75rem;
+      margin-top: 0.2rem;
+      margin-bottom: 0.7rem;
     }
 
     .meta-list {
       display: flex;
       flex-direction: column;
-      gap: 0.45rem;
-      font-size: 0.92rem;
+      gap: 0.4rem;
+      font-size: 0.9rem;
       color: #fff;
     }
 
     .meta-item {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
+      gap: 0.5rem;
     }
 
     .err-box {
       display: none;
-      background: rgba(127, 29, 29, 0.92);
+      background: rgba(127, 29, 29, 0.94);
       border: 1px solid #fca5a5;
       color: #fef2f2;
       padding: 0.75rem 0.95rem;
@@ -152,7 +369,7 @@
     }
 
     .section-title {
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 600;
       color: #f8fafc;
       padding: 0.1rem 0.2rem;
@@ -168,11 +385,11 @@
       background: var(--card-dark);
       border-radius: 22px;
       padding: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.09);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 112px;
+      min-height: 110px;
     }
 
     .metric-top {
@@ -183,7 +400,7 @@
     }
 
     .metric-val {
-      font-size: 1.65rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: #fff;
     }
@@ -210,7 +427,7 @@
     }
 
     .metric-sub {
-      font-size: 0.76rem;
+      font-size: 0.75rem;
       color: rgba(248, 250, 252, 0.65);
       margin-top: 0.15rem;
     }
@@ -228,14 +445,15 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 0.35rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+      z-index: 20;
     }
 
     .nav-btn {
       border: none;
       background: transparent;
-      color: rgba(248, 250, 252, 0.72);
+      color: rgba(248, 250, 252, 0.75);
       padding: 0.55rem 0.4rem;
       border-radius: 20px;
       font-size: 0.78rem;
@@ -249,32 +467,43 @@
     }
   </style>
 </head>
-<body>
+<body class="theme-day">
   <div class="app">
-    <section class="hero">
-      <div class="topbar">
-        <span id="sourceTag">ZenithX Live</span>
-        <span id="updatedTag">Syncing...</span>
+    <section class="hero clear" id="heroBox">
+      <div class="sky-layer">
+        <div class="stars"></div>
+        <div class="celestial sun" id="celestialBody"></div>
+        <div class="cloud back c1"></div>
+        <div class="cloud front c2"></div>
+        <div class="cloud front c3"></div>
+        <div class="rain-layer"></div>
       </div>
 
-      <form class="search-box" id="searchForm">
-        <input id="cityInput" type="text" placeholder="Search city (e.g. Kolkata, Delhi)" />
-        <button type="submit">Go</button>
-      </form>
+      <div class="hero-content">
+        <div class="topbar">
+          <span id="sourceTag">ZenithX 2D</span>
+          <span id="updatedTag">Syncing...</span>
+        </div>
 
-      <div class="date-line" id="dateLine">--</div>
-      <div class="temp-row">
-        <span class="temp-big" id="tempVal">--</span>
-        <span class="temp-unit">°C</span>
-      </div>
-      <div class="city-title" id="cityTitle">Kolkata</div>
+        <form class="search-box" id="searchForm">
+          <input id="cityInput" type="text" placeholder="Search city (e.g. Kolkata, Bhubaneswar)" />
+          <button type="submit">Go</button>
+        </form>
 
-      <div class="meta-list">
-        <div class="meta-item"><span>☁️</span><span id="condText">Current weather: --</span></div>
-        <div class="meta-item"><span>💨</span><span id="windHero">Wind: -- km/h</span></div>
-        <div class="meta-item"><span>🌧️</span><span id="rainHero">Rain chance: --%</span></div>
-        <div class="meta-item"><span>💧</span><span id="humHero">Humidity: --%</span></div>
-        <div class="meta-item"><span>Gauge</span><span id="pressHero">Air pressure: -- hPa</span></div>
+        <div class="date-line" id="dateLine">--</div>
+        <div class="temp-row">
+          <span class="temp-big" id="tempVal">--</span>
+          <span class="temp-unit">°C</span>
+        </div>
+        <div class="city-title" id="cityTitle">Kolkata</div>
+
+        <div class="meta-list">
+          <div class="meta-item"><span id="condIcon">☀️</span><span id="condText">Current weather: --</span></div>
+          <div class="meta-item"><span>💨</span><span id="windHero">Wind: -- km/h</span></div>
+          <div class="meta-item"><span>🌧️</span><span id="rainHero">Rain chance: --%</span></div>
+          <div class="meta-item"><span>💧</span><span id="humHero">Humidity: --%</span></div>
+          <div class="meta-item"><span>Gauge</span><span id="pressHero">Air pressure: -- hPa</span></div>
+        </div>
       </div>
     </section>
 
@@ -392,6 +621,37 @@
       return "Very unhealthy";
     }
 
+    function applySkyScene(isDay, weatherCode) {
+      const hero = document.getElementById("heroBox");
+      const celestial = document.getElementById("celestialBody");
+      const condIcon = document.getElementById("condIcon");
+
+      const dayFlag = isDay === 1 || isDay === true;
+      const code = Number(weatherCode);
+
+      const isClear = code === 0 || code === 1;
+      const isRain = [51, 53, 55, 61, 63, 65, 80, 95].includes(code);
+
+      document.body.classList.toggle("theme-day", dayFlag);
+      document.body.classList.toggle("theme-night", !dayFlag);
+
+      hero.classList.toggle("night", !dayFlag);
+      hero.classList.toggle("clear", isClear);
+      hero.classList.toggle("cloudy", !isClear);
+      hero.classList.toggle("rainy", isRain);
+
+      celestial.classList.remove("sun", "moon");
+      celestial.classList.add(dayFlag ? "sun" : "moon");
+
+      if (isRain) {
+        condIcon.textContent = "🌧️";
+      } else if (!isClear) {
+        condIcon.textContent = dayFlag ? "⛅" : "☁️";
+      } else {
+        condIcon.textContent = dayFlag ? "☀️" : "🌙";
+      }
+    }
+
     function renderUI(data) {
       const now = new Date();
       document.getElementById("dateLine").textContent = now.toLocaleDateString(undefined, {
@@ -403,6 +663,12 @@
         hour: "2-digit",
         minute: "2-digit"
       });
+
+      const hourNow = now.getHours();
+      const fallbackDay = hourNow >= 6 && hourNow < 18 ? 1 : 0;
+      const activeDay = data.isDay != null ? data.isDay : fallbackDay;
+
+      applySkyScene(activeDay, data.weatherCode);
 
       document.getElementById("cityTitle").textContent = data.city;
       document.getElementById("tempVal").textContent = Math.round(data.temp);
@@ -435,7 +701,7 @@
       try {
         const wUrl =
           `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-          `&current=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,surface_pressure,wind_speed_10m` +
+          `&current=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,surface_pressure,wind_speed_10m,is_day` +
           `&hourly=precipitation_probability&forecast_days=1`;
 
         const aUrl =
@@ -449,106 +715,4 @@
         const wJson = await wRes.json();
         const aJson = aRes && aRes.ok ? await aRes.json() : null;
 
-        if (wJson.current) {
-          const cur = wJson.current;
-          let rainProb = cur.precipitation_probability;
-          if (rainProb == null && wJson.hourly && wJson.hourly.precipitation_probability) {
-            rainProb = wJson.hourly.precipitation_probability[0];
-          }
-
-          renderUI({
-            city: label,
-            temp: cur.temperature_2m,
-            condition: WEATHER_LABELS[cur.weather_code] || ("Weather Code " + cur.weather_code),
-            wind: cur.wind_speed_10m,
-            rainChance: rainProb,
-            humidity: cur.relative_humidity_2m,
-            pressure: cur.surface_pressure,
-            aqi: aJson && aJson.current ? aJson.current.us_aqi : null,
-            source: "Open-Meteo"
-          });
-          return;
-        }
-      } catch (err) {
-        // Fallback below
-      }
-
-      // Fallback to wttr.in
-      try {
-        const tRes = await fetch("https://wttr.in/" + encodeURIComponent(label) + "?format=j1");
-        const tJson = await tRes.json();
-        if (tJson.current_condition && tJson.current_condition[0]) {
-          const c = tJson.current_condition[0];
-          const chance =
-            c.precipMM && Number(c.precipMM) > 0 ? 70 : 15;
-
-          renderUI({
-            city: label,
-            temp: Number(c.temp_C),
-            condition: c.weatherDesc && c.weatherDesc[0] ? c.weatherDesc[0].value : "Live",
-            wind: Number(c.windspeedKmph),
-            rainChance: chance,
-            humidity: Number(c.humidity),
-            pressure: Number(c.pressure),
-            aqi: null,
-            source: "wttr.in"
-          });
-          return;
-        }
-      } catch (e2) {
-        showError("Weather & AQI servers se data nahi mil paaya. Network check karein.");
-      }
-    }
-
-    async function loadByCity(cityName) {
-      currentCity = cityName;
-      try {
-        const geoUrl =
-          "https://geocoding-api.open-meteo.com/v1/search?name=" +
-          encodeURIComponent(cityName) +
-          "&count=1";
-        const gRes = await fetch(geoUrl);
-        const gJson = await gRes.json();
-
-        if (gJson.results && gJson.results.length > 0) {
-          const item = gJson.results[0];
-          const niceName = item.name + (item.country_code ? ", " + item.country_code : "");
-          await loadByCoords(item.latitude, item.longitude, niceName);
-          return;
-        }
-      } catch (e) {
-        // Direct fallback
-      }
-      await loadByCoords(22.5726, 88.3639, cityName);
-    }
-
-    document.getElementById("searchForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const q = document.getElementById("cityInput").value.trim();
-      if (q) loadByCity(q);
-    });
-
-    document.getElementById("btnKolkata").addEventListener("click", () => {
-      document.getElementById("cityInput").value = "";
-      loadByCity("Kolkata");
-    });
-
-    document.getElementById("btnRefresh").addEventListener("click", () => {
-      loadByCity(currentCity);
-    });
-
-    document.getElementById("btnGps").addEventListener("click", () => {
-      if (!navigator.geolocation) {
-        showError("Is device/browser mein GPS support available nahi hai.");
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => loadByCoords(pos.coords.latitude, pos.coords.longitude, "My Location"),
-        () => showError("Location permission allow nahi hui ya GPS off hai.")
-      );
-    });
-
-    loadByCity("Kolkata");
-  </script>
-</body>
-</html>
+        if (wJson.curre
